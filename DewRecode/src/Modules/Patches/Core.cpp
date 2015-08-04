@@ -98,6 +98,51 @@ namespace
 			ret
 		}
 	}
+
+	__declspec(naked) void DualWieldPromptHook()
+	{
+		__asm
+		{
+			; hack to change the prompt from "Hold RB to pick up" to "Hold LB to dual-wield"
+			push	ebp
+			mov		ebp, esp
+			sub		esp, 10h
+			push	ebx
+			xor		ebx, ebx
+			mov		bl, byte ptr ds:[216184Ah]
+			cmp		bl, 02h
+			jle normalState
+
+			cmp		dword ptr ds:[eax], 73657250h
+			je		fixCommand
+			jne		dualWieldState
+
+			fixCommand:
+			mov		ebx, ds:[eax]
+			add		eax,07h
+			jmp end
+
+			dualWieldState:
+			cmp		byte ptr[eax + 6], 9Fh
+			jne		end
+			add		eax, 23Eh; jump to next dual wield string
+				; mov		byte ptr[eax + 6], 9Eh
+			jmp end
+
+			normalState:
+			cmp		byte ptr [eax+6], 9Eh
+			jne		end
+			mov		byte ptr [eax+6], 9Fh
+
+			end:
+			pop		ebx
+			push	esi
+			mov		[ebp+8], eax
+			mov		esi, [ebp+8]
+			push    4EDAAAh
+			retn
+		}
+	}
 }
 namespace Modules
 {
@@ -136,6 +181,7 @@ namespace Modules
 			/*Hook("FOVHook", 0x50CA02, FovHook, HookType::Jmp)*/
 
 			Hook("DualWieldHook", 0xB61550, DualWieldHook, HookType::Jmp),
+			Hook("DualWieldPromptHook", 0x4EDAA0, DualWieldPromptHook, HookType::Jmp),
 			Hook("GetEquipmentCountHook", 0xB440F0, GetEquipmentCountHook, HookType::Jmp),
 			Hook("SprintInputHook", 0x46DFBB, SprintInputHook, HookType::Jmp),
 			Hook("ScopeLevelHook", 0x5D50CB, ScopeLevelHook, HookType::Jmp),
