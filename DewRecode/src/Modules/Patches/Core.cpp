@@ -111,7 +111,7 @@ namespace
 			xor		ebx, ebx
 			mov		bl, byte ptr ds:[216184Ah]
 			cmp		bl, 02h
-			jle normalState
+			jle end
 
 			cmp		dword ptr ds:[eax], 73657250h
 			je		fixCommand
@@ -126,13 +126,6 @@ namespace
 			cmp		byte ptr[eax + 6], 9Fh
 			jne		end
 			add		eax, 23Eh; jump to next dual wield string
-				; mov		byte ptr[eax + 6], 9Eh
-			jmp end
-
-			normalState:
-			cmp		byte ptr [eax+6], 9Eh
-			jne		end
-			mov		byte ptr [eax+6], 9Fh
 
 			end:
 			pop		ebx
